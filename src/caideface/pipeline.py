@@ -28,7 +28,7 @@ class DefacePipeline:
     desired_dilation_mm : float
         Physical dilation in mm for brain mask expansion.
     background_value : float
-        Value for defaced voxels (default -1024 for CT HU air).
+        Value for defaced voxels (default 0 for MRI; use -1024 for CT).
     target_path : str or None
         Custom MNI152 skull-stripped template. Uses bundled if None.
     face_mask_path : str or None
@@ -42,7 +42,7 @@ class DefacePipeline:
         device: str | None = None,
         disable_tta: bool = True,
         desired_dilation_mm: float = 14.0,
-        background_value: float = -1024,
+        background_value: float = 0,
         target_path: str | None = None,
         face_mask_path: str | None = None,
     ):

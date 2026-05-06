@@ -220,7 +220,7 @@ def deface_single(
     brainsfit_path: str,
     brainsresample_path: str,
     existing_transform: str | None = None,
-    background_value: float = -1024,
+    background_value: float = 0,
 ) -> bool:
     """Register, warp face mask, and deface a single scan.
 
@@ -293,7 +293,7 @@ def deface_batch(
     brainsresample_path: str,
     target_path: str | None = None,
     face_mask_path: str | None = None,
-    background_value: float = -1024,
+    background_value: float = 0,
 ) -> list[str]:
     """Run the full defacing pipeline (Step 3) on all dilated scans.
 
@@ -314,7 +314,7 @@ def deface_batch(
     face_mask_path : str or None
         Path to face mask in MNI152 space. Uses bundled if None.
     background_value : float
-        Value to fill defaced regions (default -1024 for CT HU).
+        Value to fill defaced regions (default 0 for MRI; use -1024 for CT).
 
     Returns
     -------

@@ -41,7 +41,7 @@ def main():
     run_parser.add_argument("--device", default=None, choices=["cpu", "cuda"], help="Device for HD-BET (auto-detected if omitted)")
     run_parser.add_argument("--no-tta", action="store_true", default=True, help="Disable HD-BET test-time augmentation (default: disabled)")
     run_parser.add_argument("--dilation-mm", type=float, default=14.0, help="Brain mask dilation in mm (default: 14)")
-    run_parser.add_argument("--background", type=float, default=-1024, help="Background value for defaced voxels (default: -1024)")
+    run_parser.add_argument("--background", type=float, default=0, help="Background value for defaced voxels (default: 0 for MRI, use -1024 for CT)")
     run_parser.add_argument("--template", default=None, help="Custom MNI152 skull-stripped template (uses bundled if omitted)")
     run_parser.add_argument("--face-mask", default=None, help="Custom face mask in MNI152 space (uses bundled if omitted)")
     run_parser.add_argument("--steps", default="all", help="Steps to run: all, or comma-separated: reorient,skull_strip,deface")
@@ -68,7 +68,7 @@ def main():
     deface_parser.add_argument("--brainsresample", required=True, help="Path to BRAINSResample executable")
     deface_parser.add_argument("--template", default=None, help="Custom MNI152 skull-stripped template")
     deface_parser.add_argument("--face-mask", default=None, help="Custom face mask in MNI152 space")
-    deface_parser.add_argument("--background", type=float, default=-1024, help="Background value")
+    deface_parser.add_argument("--background", type=float, default=0, help="Background value (default: 0 for MRI, use -1024 for CT)")
 
     args = parser.parse_args()
 

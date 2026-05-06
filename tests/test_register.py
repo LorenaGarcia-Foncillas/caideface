@@ -77,7 +77,7 @@ class TestMaskCombination:
         """Verify defacing keeps brain voxels and sets others to background."""
         scan = np.array([100, 200, 300, 400, 500], dtype=float)
         mask = np.array([0, 1, 1, 1, 0], dtype=float)
-        background = -1024
+        background = 0
 
         defaced = np.where(mask > 0, scan, background)
 
@@ -91,7 +91,7 @@ class TestMaskCombination:
         scan = np.random.default_rng(0).random((4, 4, 4, 3))
         mask = np.zeros((4, 4, 4))
         mask[1:3, 1:3, 1:3] = 1
-        background = -1024
+        background = 0
 
         defaced = np.where(mask[..., np.newaxis] > 0, scan, background)
 

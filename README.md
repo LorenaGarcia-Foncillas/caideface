@@ -74,7 +74,7 @@ This creates three subdirectories under `./output`:
 |------|---------|-------------|
 | `--device` | auto | `cpu` or `cuda` for HD-BET |
 | `--dilation-mm` | `14.0` | Brain mask dilation in mm |
-| `--background` | `-1024` | Fill value for defaced regions (HU for CT) |
+| `--background` | `0` | Fill value for defaced regions (0 for MRI, -1024 for CT) |
 | `--template` | bundled | Custom MNI152 skull-stripped template |
 | `--face-mask` | bundled | Custom face mask in MNI152 space |
 | `--steps` | `all` | Run specific steps: `reorient`, `skull_strip`, `deface` (comma-separated) |
@@ -107,7 +107,7 @@ pipeline = DefacePipeline(
     brainsresample_path="/path/to/BRAINSResample",
     device="cpu",              # or "cuda"
     desired_dilation_mm=14.0,
-    background_value=-1024,
+    background_value=0,
 )
 
 results = pipeline.run(
