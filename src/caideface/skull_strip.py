@@ -1,7 +1,6 @@
 """Step 2: Skull-stripping with HD-BET and dynamic mask dilation."""
 
 import os
-import re
 import subprocess
 import sys
 import logging
@@ -12,15 +11,6 @@ import pandas as pd
 from scipy.ndimage import binary_dilation
 
 logger = logging.getLogger(__name__)
-
-# Scan types to exclude from defacing by default
-DEFAULT_EXCLUDE_KEYWORDS = (
-    "trace", "fractional", "adc", "dwi", "dti", "diffusion", "dce",
-    "swi", "ven_bold", "venogram", "venography", "pha", "phase",
-    "mag", "magnitude", "mip", "dcctions", "localiser", "scout",
-    "loc", "aahead", "plan", "perf", "perfusion", "mrv", "sw",
-    "average_dc", "isob", "3-pl", "smartplan", "cal",
-)
 
 
 def get_default_device() -> str:
@@ -80,18 +70,16 @@ def get_safe_structuring_element(
     return np.ones(shape, dtype=np.uint8)
 
 
-def _should_process(filename: str, exclude_keywords: tuple = DEFAULT_EXCLUDE_KEYWORDS) -> bool:
-    """Return True if a NIfTI file should be skull-stripped."""
-    if not filename.endswith(".nii.gz"):
+def is_valid_3d_volume(filepath: str) -> bool:
+    """Return True if the NIfTI file is a 3D volume (not 2D or 4D)."""
+    if not filepath.endswith(".nii.gz"):
         return False
-
-    lower = filename.lower()
-    is_mpr = "multiplanar" in lower
-    is_processed = "processed_images" in lower
-    has_exclude = any(kw in lower for kw in exclude_keywords)
-    has_sb = re.search(r"sb\d+", filename, re.IGNORECASE) is not None
-
-    return is_mpr or is_processed or (not has_exclude and not has_sb)
+    try:
+        img = nib.load(filepath)
+        shape = img.shape
+        return len(shape) == 3 and all(d > 1 for d in shape)
+    except Exception:
+        return False
 
 
 def skull_strip_single(
@@ -198,9 +186,10 @@ def skull_strip_batch(
     device: str | None = None,
     disable_tta: bool = True,
     desired_dilation_mm: float = 14.0,
-    exclude_keywords: tuple = DEFAULT_EXCLUDE_KEYWORDS,
 ) -> pd.DataFrame:
-    """Run HD-BET skull-stripping on all eligible NIfTI files under *input_dir*.
+    """Run HD-BET skull-stripping on all 3D NIfTI volumes under *input_dir*.
+
+    Scans that are not 3D volumes (2D slices or 4D time series) are skipped.
 
     Parameters
     ----------
@@ -214,8 +203,6 @@ def skull_strip_batch(
         Disable test-time augmentation.
     desired_dilation_mm : float
         Physical dilation in mm.
-    exclude_keywords : tuple
-        Filename keywords to skip.
 
     Returns
     -------
@@ -236,14 +223,9 @@ def skull_strip_batch(
 
     for root, _dirs, files in os.walk(input_dir):
         for fname in files:
-            if not _should_process(fname, exclude_keywords):
-                continue
-
             input_file = os.path.join(root, fname)
 
-            # Skip 2D images
-            img = nib.load(input_file)
-            if len(img.shape) == 2 or any(d <= 1 for d in img.shape):
+            if not is_valid_3d_volume(input_file):
                 continue
 
             logger.info("Processing: %s", input_file)
