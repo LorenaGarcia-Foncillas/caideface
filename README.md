@@ -26,7 +26,7 @@ The MNI152 skull-stripped template and face mask are **bundled with the package*
 |------|---------|---------|
 | **BRAINSFit** & **BRAINSResample** | Step 3 | Bundled with [3D Slicer](https://www.slicer.org/) |
 
-> **Note:** Step 1 (reorientation) no longer requires FSL -- it uses nibabel's built-in `as_closest_canonical()` function.
+> **Note:** Step 1 (reorientation) no longer requires FSL -- it uses nibabel's orientation tools to reorient scans to LAS (equivalent to `fslreorient2std`).
 
 #### Finding BRAINSFit and BRAINSResample
 
