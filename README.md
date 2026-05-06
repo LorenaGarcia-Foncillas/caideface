@@ -1,0 +1,182 @@
+# caideface
+
+**MRI defacing pipeline with skull-stripping and affine registration** from the [cai4cai](https://cai4cai.ml/) research group (Contextual Artificial Intelligence for Computer Assisted Interventions).
+
+This pipeline anonymises head MRI scans by removing facial features while preserving brain structures, as described in the paper *"A Generalisable Head MRI Defacing Pipeline: Evaluation on 2,566 Meningioma Scans"* ([arXiv:2505.12999](https://arxiv.org/abs/2505.12999)).
+
+## Pipeline overview
+
+The pipeline consists of three steps:
+
+1. **Reorientation** -- Aligns NIfTI scans to RAS+ canonical orientation (MNI152 standard) using nibabel.
+2. **Skull-stripping** -- Extracts brain masks using [HD-BET](https://github.com/MIC-DKFZ/HD-BET), then applies dynamic dilation to preserve peripheral brain structures.
+3. **Registration & Defacing** -- Registers each scan to the MNI152 template using BRAINSFit (affine), warps a face mask into the scan's space, and applies it to remove facial features.
+
+The MNI152 skull-stripped template and face mask are **bundled with the package**, so no additional downloads are needed.
+
+## Requirements
+
+### Python
+
+- Python >= 3.9
+
+### External tools (not pip-installable)
+
+| Tool | Used in | Install |
+|------|---------|---------|
+| **BRAINSFit** & **BRAINSResample** | Step 3 | Bundled with [3D Slicer](https://www.slicer.org/) |
+
+> **Note:** Step 1 (reorientation) no longer requires FSL -- it uses nibabel's built-in `as_closest_canonical()` function.
+
+#### Finding BRAINSFit and BRAINSResample
+
+These executables are included with 3D Slicer. Common locations:
+
+- **macOS**: `/Applications/Slicer.app/Contents/lib/Slicer-5.8/cli-modules/BRAINSFit`
+- **Linux**: `/path/to/Slicer/lib/Slicer-5.8/cli-modules/BRAINSFit`
+
+You can also build them from source via [BRAINSTools](https://github.com/BRAINSia/BRAINSTools).
+
+## Installation
+
+```bash
+pip install caideface
+```
+
+Or install from source:
+
+```bash
+git clone https://github.com/cai4cai/caideface.git
+cd caideface
+pip install -e .
+```
+
+## Usage
+
+### CLI -- Full pipeline
+
+Run all three steps in one command:
+
+```bash
+caideface run ./input_nifti ./output \
+  --brainsfit /path/to/BRAINSFit \
+  --brainsresample /path/to/BRAINSResample
+```
+
+This creates three subdirectories under `./output`:
+- `reoriented/` -- Step 1 outputs
+- `hdbet/` -- Step 2 outputs (skull-stripped, masks, dilated)
+- `defaced/` -- Step 3 outputs (final defaced scans)
+
+#### Options
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--device` | auto | `cpu` or `cuda` for HD-BET |
+| `--dilation-mm` | `14.0` | Brain mask dilation in mm |
+| `--background` | `-1024` | Fill value for defaced regions (HU for CT) |
+| `--template` | bundled | Custom MNI152 skull-stripped template |
+| `--face-mask` | bundled | Custom face mask in MNI152 space |
+| `--steps` | `all` | Run specific steps: `reorient`, `skull_strip`, `deface` (comma-separated) |
+| `-v` | off | Verbose/debug logging |
+
+### CLI -- Individual steps
+
+Run each step separately for more control:
+
+```bash
+# Step 1: Reorientation
+caideface reorient ./raw_nifti ./reoriented
+
+# Step 2: Skull-stripping
+caideface skull-strip ./reoriented ./hdbet --device cpu
+
+# Step 3: Registration & Defacing
+caideface deface ./reoriented ./hdbet ./defaced \
+  --brainsfit /path/to/BRAINSFit \
+  --brainsresample /path/to/BRAINSResample
+```
+
+### Python API
+
+```python
+from caideface import DefacePipeline
+
+pipeline = DefacePipeline(
+    brainsfit_path="/path/to/BRAINSFit",
+    brainsresample_path="/path/to/BRAINSResample",
+    device="cpu",              # or "cuda"
+    desired_dilation_mm=14.0,
+    background_value=-1024,
+)
+
+results = pipeline.run(
+    input_dir="./input_nifti",
+    output_dir="./output",
+)
+
+# Check for failures
+failed = results.get("failed_defacing", [])
+if failed:
+    print(f"{len(failed)} scans failed to deface")
+```
+
+You can also call individual steps directly:
+
+```python
+from caideface import reorient_batch, skull_strip_batch, deface_batch
+
+# Step 1
+reorient_batch("./raw_nifti", "./reoriented")
+
+# Step 2
+skull_strip_batch("./reoriented", "./hdbet", device="cpu")
+
+# Step 3
+deface_batch(
+    reoriented_dir="./reoriented",
+    hdbet_dir="./hdbet",
+    output_dir="./defaced",
+    brainsfit_path="/path/to/BRAINSFit",
+    brainsresample_path="/path/to/BRAINSResample",
+)
+```
+
+## Output structure
+
+```
+output/
+├── reoriented/
+│   ├── reorientation_log.csv
+│   └── <subject>/<scan>.nii.gz
+├── hdbet/
+│   ├── hd_bet_log.csv
+│   └── <subject>/
+│       ├── hd_bet_<scan>.nii.gz           # Skull-stripped
+│       ├── hd_bet_mask_<scan>.nii.gz      # Dilated brain mask
+│       └── hd_bet_dilated_<scan>.nii.gz   # Dilated skull-stripped
+└── defaced/
+    ├── not_defaced_scans.csv              # Only if failures occurred
+    └── <subject>/
+        └── hd_bet_dilated_<scan>_masked.nii.gz  # Final defaced scan
+```
+
+## Existing transforms
+
+If you have pre-computed registration transforms (e.g. from 3D Slicer), place a file named `Transform_to_template.txt` in the same directory as the dilated skull-stripped scan. The pipeline will use it instead of running BRAINSFit. Both plain 4x4 text matrices and ITK/Slicer transform formats are supported.
+
+## Citation
+
+If you use this tool, please cite:
+
+```bibtex
+@article{caideface2025,
+  title={A Generalisable Head MRI Defacing Pipeline: Evaluation on 2,566 Meningioma Scans},
+  year={2025},
+  url={https://arxiv.org/abs/2505.12999}
+}
+```
+
+## License
+
+MIT
