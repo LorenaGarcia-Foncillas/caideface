@@ -90,7 +90,8 @@ This creates three subdirectories under `./output`:
 
 | Flag | Default | Description |
 |------|---------|-------------|
-| `--device` | auto | `cpu` or `cuda` for HD-BET |
+| `--device` | auto-detected | `cpu` or `cuda` for HD-BET |
+| `--no-tta` | on | Disable HD-BET test-time augmentation (faster but less accurate) |
 | `--dilation-mm` | `14.0` | Brain mask dilation in mm |
 | `--background` | `0` | Fill value for defaced regions (0 for MRI, -1024 for CT) |
 | `--template` | bundled | Custom MNI152 skull-stripped template |
@@ -113,51 +114,6 @@ caideface skull-strip ./reoriented ./hdbet --device cpu
 caideface deface ./reoriented ./hdbet ./defaced \
   --brainsfit /path/to/BRAINSFit \
   --brainsresample /path/to/BRAINSResample
-```
-
-### Python API
-
-```python
-from caideface import DefacePipeline
-
-pipeline = DefacePipeline(
-    brainsfit_path="/path/to/BRAINSFit",
-    brainsresample_path="/path/to/BRAINSResample",
-    device="cpu",              # or "cuda"
-    desired_dilation_mm=14.0,
-    background_value=0,
-)
-
-results = pipeline.run(
-    input_dir="./input_nifti",
-    output_dir="./output",
-)
-
-# Check for failures
-failed = results.get("failed_defacing", [])
-if failed:
-    print(f"{len(failed)} scans failed to deface")
-```
-
-You can also call individual steps directly:
-
-```python
-from caideface import reorient_batch, skull_strip_batch, deface_batch
-
-# Step 1
-reorient_batch("./raw_nifti", "./reoriented")
-
-# Step 2
-skull_strip_batch("./reoriented", "./hdbet", device="cpu")
-
-# Step 3
-deface_batch(
-    reoriented_dir="./reoriented",
-    hdbet_dir="./hdbet",
-    output_dir="./defaced",
-    brainsfit_path="/path/to/BRAINSFit",
-    brainsresample_path="/path/to/BRAINSResample",
-)
 ```
 
 ## Output structure
@@ -197,4 +153,4 @@ If you use this tool, please cite:
 
 ## License
 
-MIT
+This project is licensed under the MIT License -- see the [LICENSE](LICENSE.md) file for details.

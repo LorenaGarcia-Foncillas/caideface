@@ -1,7 +1,7 @@
 """caideface - MRI defacing pipeline from cai4cai.
 
 A three-step pipeline for anonymising head MRI scans:
-1. Reorientation to MNI152 atlas reference (FSL)
+1. Reorientation to MNI152 atlas reference (nibabel)
 2. Skull-stripping with HD-BET and dynamic dilation
 3. Affine registration and defacing (BRAINSFit)
 """
