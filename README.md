@@ -8,7 +8,7 @@ This pipeline anonymises head MRI scans by removing facial features while preser
 
 The pipeline consists of three steps:
 
-1. **Reorientation** -- Aligns NIfTI scans to RAS+ canonical orientation (MNI152 standard) using nibabel.
+1. **Reorientation** -- Aligns NIfTI scans to LAS canonical orientation (MNI152 standard) using nibabel.
 2. **Skull-stripping** -- Extracts brain masks using [HD-BET](https://github.com/MIC-DKFZ/HD-BET), then applies dynamic dilation to preserve peripheral brain structures.
 3. **Registration & Defacing** -- Registers each scan to the MNI152 template using BRAINSFit (affine), warps a face mask into the scan's space, and applies it to remove facial features.
 
@@ -35,11 +35,27 @@ These executables are included with 3D Slicer. Common locations:
 - **macOS**: `/Applications/Slicer.app/Contents/lib/Slicer-5.8/cli-modules/BRAINSFit`
 - **Linux**: `/path/to/Slicer/lib/Slicer-5.8/cli-modules/BRAINSFit`
 
+Replace `5.8` with your installed Slicer version if different. To verify the executables are found and working:
+
+```bash
+# Check they exist
+ls /Applications/Slicer.app/Contents/lib/Slicer-5.8/cli-modules/BRAINSFit
+ls /Applications/Slicer.app/Contents/lib/Slicer-5.8/cli-modules/BRAINSResample
+
+# Check they run (should print usage/help info)
+/Applications/Slicer.app/Contents/lib/Slicer-5.8/cli-modules/BRAINSFit --help
+/Applications/Slicer.app/Contents/lib/Slicer-5.8/cli-modules/BRAINSResample --help
+```
+
 You can also build them from source via [BRAINSTools](https://github.com/BRAINSia/BRAINSTools).
 
 ## Installation
 
+We recommend using a conda environment:
+
 ```bash
+conda create -n caideface python=3.10 -y
+conda activate caideface
 pip install caideface
 ```
 
@@ -50,6 +66,8 @@ git clone https://github.com/cai4cai/caideface.git
 cd caideface
 pip install -e .
 ```
+
+> **Note:** caideface requires `numpy<2` (enforced automatically). Some dependencies (HD-BET / nnU-Net) are not yet compatible with NumPy 2.x.
 
 ## Usage
 
