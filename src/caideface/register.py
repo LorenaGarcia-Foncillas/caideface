@@ -196,13 +196,13 @@ def _build_scan_mapping(
     Returns a dict: {floating_path: (reoriented_path, brain_mask_path)}
     """
     reoriented_files = natsorted(glob(os.path.join(reoriented_dir, "**", "*.nii.gz"), recursive=True))
-    brain_masks = natsorted(glob(os.path.join(hdbet_dir, "**", "hd_bet_mask_*.nii.gz"), recursive=True))
+    brain_masks = natsorted(glob(os.path.join(hdbet_dir, "**", "*_mask.nii.gz"), recursive=True))
 
     mapping = {}
     for fimg in floating_imgs:
-        base = os.path.basename(fimg).replace("hd_bet_dilated_", "")
-        reoriented = next((r for r in reoriented_files if base in os.path.basename(r)), None)
-        mask = next((m for m in brain_masks if base in os.path.basename(m)), None)
+        stem = os.path.basename(fimg).replace("_dilated.nii.gz", "")
+        reoriented = next((r for r in reoriented_files if os.path.basename(r) == f"{stem}.nii.gz"), None)
+        mask = next((m for m in brain_masks if os.path.basename(m) == f"{stem}_mask.nii.gz"), None)
         if reoriented and mask:
             mapping[fimg] = (reoriented, mask)
         else:
@@ -331,7 +331,7 @@ def deface_batch(
     output_dir = os.path.abspath(output_dir)
 
     floating_imgs = natsorted(
-        glob(os.path.join(hdbet_dir, "**", "hd_bet_dilated_*.nii.gz"), recursive=True)
+        glob(os.path.join(hdbet_dir, "**", "*_dilated.nii.gz"), recursive=True)
     )
 
     if not floating_imgs:

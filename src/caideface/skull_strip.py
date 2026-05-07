@@ -113,11 +113,12 @@ def skull_strip_single(
         Status dict with keys: input, output, hd_bet, mask, dilated.
     """
     filename = os.path.basename(input_file)
+    stem = filename.replace(".nii.gz", "")
     subfolder = os.path.relpath(os.path.dirname(input_file), start=input_root)
 
-    hd_bet_file = os.path.join(output_dir, subfolder, f"hd_bet_{filename}")
-    mask_file = os.path.join(output_dir, subfolder, f"hd_bet_mask_{filename}")
-    dilated_file = os.path.join(output_dir, subfolder, f"hd_bet_dilated_{filename}")
+    hd_bet_file = os.path.join(output_dir, subfolder, f"{stem}_brain.nii.gz")
+    mask_file = os.path.join(output_dir, subfolder, f"{stem}_mask.nii.gz")
+    dilated_file = os.path.join(output_dir, subfolder, f"{stem}_dilated.nii.gz")
 
     os.makedirs(os.path.dirname(hd_bet_file), exist_ok=True)
 
