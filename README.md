@@ -151,6 +151,19 @@ If you use this tool, please cite:
 }
 ```
 
+If you use HD-BET (skull-stripping, Step 2), please also cite:
+
+```bibtex
+@article{Isensee2019,
+  author={Isensee, F. and Schell, M. and Tursunova, I. and Brugnara, G. and Bonekamp, D. and Neuberger, U. and Wick, A. and Schlemmer, H. P. and Heiland, S. and Wick, W. and Bendszus, M. and Maier-Hein, K. H. and Kickingereder, P.},
+  title={Automated brain extraction of multi-sequence MRI using artificial neural networks},
+  journal={Human Brain Mapping},
+  year={2019},
+  pages={1--13},
+  doi={10.1002/hbm.24750}
+}
+```
+
 ## License
 
 This project is licensed under the MIT License -- see the [LICENSE](LICENSE.md) file for details.
