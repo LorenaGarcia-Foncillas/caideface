@@ -6,7 +6,7 @@ A three-step pipeline for anonymising head MRI scans:
 3. Affine registration and defacing (BRAINSFit)
 """
 
-__version__ = "0.1.2"
+__version__ = "0.1.3"
 
 from .pipeline import DefacePipeline
 from .reorient import reorient_batch, reorient_single
