@@ -1,8 +1,14 @@
 # caideface
 
+
 **MRI defacing pipeline with skull-stripping and affine registration** from the [cai4cai](https://cai4cai.ml/) research group (Contextual Artificial Intelligence for Computer Assisted Interventions).
 
 This pipeline anonymises head MRI scans by removing facial features while preserving brain structures, as described in the paper *"A Generalisable Head MRI Defacing Pipeline: Evaluation on 2,566 Meningioma Scans"* ([arXiv:2505.12999](https://arxiv.org/abs/2505.12999)).
+
+
+## ⚠️ This repository is archived. 
+The functionality here has been merged into [cai4cai/defacing_pipeline](https://github.com/cai4cai/defacing_pipeline). Please use that repository instead.
+
 
 ## Pipeline overview
 
